@@ -1,30 +1,28 @@
 # 1. 依賴目錄 (Dependencies)
-# 這是最重要的，不要上傳巨大的 node_modules 資料夾
 /node_modules
 /npm-debug.log
 /yarn-error.log
 
-# 2. 環境變數 / 密鑰檔案 (Secrets/Configuration)
-# 您的 MongoDB Atlas 連線字串、API Key 等敏感資訊會存在這裡
-# 絕對不能公開或上傳到 GitHub！
+# 2. 環境變數 / 密鑰檔案 (Secrets)
+# 包含 MySQL 連線字串、JWT Secret、Cloudinary Keys 等敏感資訊
 .env
 .env.*
 .env.local
 .env.development.local
-
-# 唯獨放行 .env.example (這行要放在 .env.* 下面)
 !.env.example
 
-# 3. 運行和建構相關檔案 (Build/Logs)
+# 3. Prisma 自動生成程式碼 (Prisma Generated Client)
+# 因為 Prisma Client 是靠 npx prisma generate 自動生成的，不需加進 Git
+/generated/prisma
+
+# 4. 運行與建構檔案 (Build/Logs)
 /dist
 /build
 /temp
 /logs
 *.log
-/generated/prisma
 
-# 4. 作業系統 & 編輯器檔案 (OS/Editor Files)
-# 忽略 Mac OS 或 IDEs 產生的垃圾檔案
+# 5. 作業系統與編輯器設定 (OS/Editor Files)
 .DS_Store
 .vscode
 .idea
