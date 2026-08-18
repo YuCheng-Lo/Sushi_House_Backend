@@ -1,6 +1,8 @@
 import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcrypt";
+import AppError from "../utils/AppError.js";
+import { httpStatus } from "../constants/constants.js";
 
 interface RegisterInput {
   name: string;
@@ -19,7 +21,7 @@ export const register = async (data: RegisterInput) => {
     },
   });
 
-  if (existingUser) throw new Error("Email已被註冊");
+  if (existingUser) throw new AppError("Email已被註冊", httpStatus.CONFLICT);
 
   // 2. 密碼加密
   const hashedPassword = await bcrypt.hash(password, saltRounds);
