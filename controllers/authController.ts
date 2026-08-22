@@ -68,3 +68,31 @@ export const getMe = async (req: Request, res: Response) => {
     data: user,
   });
 };
+
+export const refresh = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken;
+  const ip = req.ip ?? null;
+  const user_agent = req.get("user-agent") ?? null;
+
+  const { newAccessToken, newRefreshToken, expiresAt } =
+    await authService.refresh({
+      refreshToken,
+      ip,
+      user_agent,
+    });
+
+  res.cookie("refreshToken", newRefreshToken, {
+    httpOnly: true,
+    secure: env.isProduction,
+    sameSite: "lax",
+    expires: expiresAt,
+  });
+
+  return res.status(httpStatus.OK).json({
+    success: "ok",
+    message: "refresh刷新成功",
+    data: {
+      accessToken: newAccessToken,
+    },
+  });
+};

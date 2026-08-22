@@ -3,13 +3,16 @@ import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcrypt";
 import AppError from "../utils/AppError.js";
 import { httpStatus } from "../constants/constants.js";
-import { generateAccessToken, generateRefreshToken } from "../utils/tokens.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../utils/tokens.js";
 import type {
   LoginInput,
   RegisterInput,
 } from "../validations/authValidation.js";
-import type { GetMeInput } from "../types/auth.js";
-import { da } from "zod/locales";
+import type { GetMeInput, RefreshInput } from "../types/auth.js";
 
 export const register = async (data: RegisterInput) => {
   const { name, nickname, email, password } = data;
@@ -119,4 +122,105 @@ export const getMe = async (data: GetMeInput) => {
     },
   });
   return user;
+};
+
+export const refresh = async (data: RefreshInput) => {
+  const { refreshToken, ip, user_agent } = data;
+
+  if (!refreshToken) {
+    throw new AppError("不存在的refreshToken", httpStatus.UNAUTHORIZED);
+  }
+
+  const payload = verifyRefreshToken(refreshToken);
+
+  const userId = Number(payload.sub);
+
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new AppError("Token Payload格式錯誤", httpStatus.UNAUTHORIZED);
+  }
+
+  const session = await prisma.session.findUnique({
+    where: {
+      id: payload.sessionId,
+    },
+    include: {
+      user: {
+        //只抓取需要用的email
+        select: {
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!session || session.user_id !== userId) {
+    throw new AppError("無效的token", httpStatus.UNAUTHORIZED);
+  }
+
+  if (session?.revoked_at) {
+    throw new AppError("此登入狀態已失效，請重新登入", httpStatus.UNAUTHORIZED);
+  }
+
+  if (session.expires_at < new Date()) {
+    throw new AppError("Token已過期", httpStatus.UNAUTHORIZED);
+  }
+
+  const refreshTokenHash = session.refresh_token_hash;
+  const isValidRefreshTokenHash = await bcrypt.compare(
+    refreshToken,
+    refreshTokenHash,
+  );
+
+  if (!isValidRefreshTokenHash) {
+    console.warn(
+      `Refresh Token 不符合目前版本：User ${userId}, Session ${payload.sessionId}`,
+    );
+
+    throw new AppError(
+      "Refresh Token 已失效，請重新登入",
+      httpStatus.UNAUTHORIZED,
+    );
+  }
+
+  //產生新的accessToken 與 refreshToken
+  const newAccessToken = generateAccessToken(userId, session.user.email);
+  const newRefreshToken = generateRefreshToken(
+    payload.sessionId,
+    userId,
+    session.expires_at,
+  );
+
+  //產生新的refreshTokenHash
+  const saltRounds = env.saltRounds;
+
+  const newRefreshTokenHash = await bcrypt.hash(newRefreshToken, saltRounds);
+
+  //更新對應sessionId的refreshTokenHash欄位的值 與 user_agent, ip_address
+  const updateResult = await prisma.session.updateMany({
+    where: {
+      id: payload.sessionId,
+      version: session.version,
+    },
+    data: {
+      refresh_token_hash: newRefreshTokenHash,
+      user_agent,
+      ip_address: ip,
+      version: {
+        increment: 1,
+      },
+    },
+  });
+
+  if (updateResult.count !== 1) {
+    throw new AppError(
+      "Refresh Token 已被更新，請重新嘗試",
+      httpStatus.UNAUTHORIZED,
+    );
+  }
+
+  return {
+    newAccessToken,
+    newRefreshToken,
+    expiresAt: session.expires_at,
+  };
 };
