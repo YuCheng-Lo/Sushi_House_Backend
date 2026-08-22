@@ -3,6 +3,7 @@ import "dotenv/config";
 import cookieParser from "cookie-parser";
 import authRoute from "./routes/authRoute.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import "./jobs/cleanupSession.js";
 
 const app = express();
 const PORT: number = 3000;
