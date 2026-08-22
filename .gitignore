@@ -26,3 +26,9 @@
 .DS_Store
 .vscode
 .idea
+
+# 6. Prisma / AI Skills
+.agents/ 
+.claude/ 
+.windsurf/ 
+skills-lock.json
