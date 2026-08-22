@@ -3,13 +3,8 @@ import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcrypt";
 import AppError from "../utils/AppError.js";
 import { httpStatus } from "../constants/constants.js";
+import type { RegisterInput } from "../validations/authValidation.js";
 
-interface RegisterInput {
-  name: string;
-  nickname?: string;
-  email: string;
-  password: string;
-}
 export const register = async (data: RegisterInput) => {
   const { name, nickname, email, password } = data;
   const saltRounds = env.saltRounds;
