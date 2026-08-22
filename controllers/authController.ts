@@ -1,6 +1,8 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import * as authService from "../services/authService.js";
 import { httpStatus } from "../constants/constants.js";
+import type { LoginInput } from "../validations/authValidation.js";
+import { env } from "../config/env.js";
 
 export const register = async (req: Request, res: Response) => {
   const { name, nickname, email, password } = req.body;
@@ -11,5 +13,39 @@ export const register = async (req: Request, res: Response) => {
     success: "ok",
     message: "註冊成功",
     data: user,
+  });
+};
+
+export const login = async (
+  req: Request<{}, {}, LoginInput>,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { email, password } = req.body;
+
+  const userAgent = req.headers["user-agent"] || "";
+  const ipAddress = req.ip;
+
+  const result = await authService.login({
+    email,
+    password,
+    userAgent,
+    ipAddress,
+  });
+
+  res.cookie("refreshToken", result.refreshToken, {
+    httpOnly: true,
+    secure: env.isProduction,
+    sameSite: "lax",
+    maxAge: env.refreshTokenLifetimeMs,
+  });
+
+  return res.status(httpStatus.OK).json({
+    success: "ok",
+    message: "登入成功",
+    data: {
+      user: result.user,
+      accessToken: result.accessToken,
+    },
   });
 };
