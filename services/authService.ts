@@ -8,6 +8,8 @@ import type {
   LoginInput,
   RegisterInput,
 } from "../validations/authValidation.js";
+import type { GetMeInput } from "../types/auth.js";
+import { da } from "zod/locales";
 
 export const register = async (data: RegisterInput) => {
   const { name, nickname, email, password } = data;
@@ -99,4 +101,22 @@ export const login = async (data: LoginInput) => {
     accessToken,
     refreshToken,
   };
+};
+
+export const getMe = async (data: GetMeInput) => {
+  const { id } = data;
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      id: true,
+      name: true,
+      nickname: true,
+      email: true,
+      created_at: true,
+    },
+  });
+  return user;
 };
