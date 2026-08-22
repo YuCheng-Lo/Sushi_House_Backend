@@ -96,3 +96,24 @@ export const refresh = async (req: Request, res: Response) => {
     },
   });
 };
+
+export const logout = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  try {
+    await authService.logout({ refreshToken });
+  } finally {
+    //當初寫入 Cookie 時有設定特定的屬性，那麼在 logout 清除時，
+    // secure 和 sameSite 這兩個參數必須完全一致，瀏覽器才會正確配合刪除。
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: env.isProduction,
+      sameSite: "lax",
+    });
+  }
+
+  return res.status(httpStatus.OK).json({
+    success: "ok",
+    message: "登出成功",
+  });
+};

@@ -7,12 +7,13 @@ import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
+  tryVerifyRefreshToken,
 } from "../utils/tokens.js";
 import type {
   LoginInput,
   RegisterInput,
 } from "../validations/authValidation.js";
-import type { GetMeInput, RefreshInput } from "../types/auth.js";
+import type { GetMeInput, LogoutInput, RefreshInput } from "../types/auth.js";
 
 export const register = async (data: RegisterInput) => {
   const { name, nickname, email, password } = data;
@@ -223,4 +224,25 @@ export const refresh = async (data: RefreshInput) => {
     newRefreshToken,
     expiresAt: session.expires_at,
   };
+};
+
+export const logout = async (data: LogoutInput) => {
+  const { refreshToken } = data;
+
+  if (!refreshToken) return;
+
+  const payload = tryVerifyRefreshToken(refreshToken, {
+    ignoreExpiration: true,
+  });
+  if (!payload) return;
+
+  await prisma.session.updateMany({
+    where: {
+      id: payload.sessionId,
+      revoked_at: null,
+    },
+    data: {
+      revoked_at: new Date(),
+    },
+  });
 };

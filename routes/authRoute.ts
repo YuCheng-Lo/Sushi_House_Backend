@@ -4,6 +4,7 @@ import {
   register,
   getMe,
   refresh,
+  logout,
 } from "../controllers/authController.js";
 import { validateBody } from "../validations/validate.js";
 import { loginSchema, registerSchema } from "../validations/authValidation.js";
@@ -18,5 +19,7 @@ router.post("/login", validateBody(loginSchema), login);
 router.get("/me", authenticate, getMe);
 
 router.post("/refresh", refresh);
+
+router.post("/logout", logout);
 
 export default router;

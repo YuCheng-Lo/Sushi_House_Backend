@@ -24,3 +24,7 @@ export interface RefreshTokenPayload extends JwtPayload {
 export interface VerifyRefreshTokenOptions {
   ignoreExpiration?: boolean;
 }
+
+export interface LogoutInput {
+  refreshToken: string | undefined;
+}
