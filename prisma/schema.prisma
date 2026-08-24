@@ -44,3 +44,27 @@ model Session {
   @@index([user_id])
   @@index([expires_at])
 }
+
+model MenuItem {
+  id            Int     @id @default(autoincrement()) @db.UnsignedInt
+  name          String  @db.VarChar(100)
+  price         Int     @db.UnsignedInt
+  unit          String? @db.VarChar(50)
+  section       String  @db.VarChar(100)
+  option        String? @db.VarChar(100)
+  description   String? @db.Text
+  imageUrl      String? @db.VarChar(500)
+  imagePublicId String? @db.VarChar(255)
+
+  status    MenuItemStatus @default(ACTIVE)
+  sortOrder Int            @default(0) @db.UnsignedInt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MenuItemStatus {
+  ACTIVE
+  HIDDEN
+  SOLD_OUT
+}
