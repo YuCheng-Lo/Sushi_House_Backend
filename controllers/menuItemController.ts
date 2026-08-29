@@ -8,7 +8,7 @@ export const createMenuItem = async (req: Request, res: Response) => {
   const result = await menuItemService.createMenuItem(newMenuItem);
 
   return res.status(httpStatus.CREATED).json({
-    success: "ok",
+    success: true,
     message: "菜餚新增成功",
     data: result,
   });

@@ -15,7 +15,7 @@ export const upload = async (req: MulterRequest, res: Response) => {
   const result = await imageService.upload(req.file);
 
   return res.status(httpStatus.OK).json({
-    success: "ok",
+    success: true,
     message: "圖片上傳成功",
     data: result,
   });
