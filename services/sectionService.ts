@@ -1,5 +1,10 @@
+import { httpStatus } from "../constants/constants.js";
 import { prisma } from "../lib/prisma.js";
-import type { CreateSectionInput } from "../validations/sectionValidation.js";
+import AppError from "../utils/AppError.js";
+import type {
+  CreateSectionInput,
+  UpdateSectionInput,
+} from "../validations/sectionValidation.js";
 
 export const createSection = async (data: CreateSectionInput) => {
   const lastSection = await prisma.section.findFirst({
@@ -44,4 +49,25 @@ export const getAdminSections = async () => {
   });
 
   return sections;
+};
+
+export const updateSection = async (id: number, data: UpdateSectionInput) => {
+  const section = await prisma.section.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!section) {
+    throw new AppError("不存在的分類", httpStatus.NOT_FOUND);
+  }
+
+  const updatedSection = await prisma.section.update({
+    where: {
+      id,
+    },
+    data,
+  });
+
+  return updatedSection;
 };

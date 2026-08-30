@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import * as sectionService from "../services/sectionService.js";
 import { httpStatus } from "../constants/constants.js";
+import type { UpdateSectionInput } from "../validations/sectionValidation.js";
 
 export const createSection = async (req: Request, res: Response) => {
   const createSectionInput = req.body;
@@ -30,6 +31,21 @@ export const getAdminSections = async (req: Request, res: Response) => {
   return res.status(httpStatus.OK).json({
     success: true,
     message: "分類取得成功",
+    data: result,
+  });
+};
+
+export const updateSection = async (
+  req: Request<{ id: string }, {}, UpdateSectionInput>,
+  res: Response,
+) => {
+  const id = Number(req.params.id);
+
+  const result = await sectionService.updateSection(id, req.body);
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    message: "分類更新成功",
     data: result,
   });
 };

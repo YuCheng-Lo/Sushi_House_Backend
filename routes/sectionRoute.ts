@@ -6,12 +6,17 @@
 
 import { Router } from "express";
 import { authenticate } from "../middlewares/authenticate.js";
-import { validateBody } from "../validations/validate.js";
-import { createSectionSchema } from "../validations/sectionValidation.js";
+import { validateBody, validateParams } from "../validations/validate.js";
+import {
+  createSectionSchema,
+  sectionIdSchema,
+  updateSectionSchema,
+} from "../validations/sectionValidation.js";
 import {
   createSection,
   getAdminSections,
   getSections,
+  updateSection,
 } from "../controllers/sectionController.js";
 
 const router = Router();
@@ -26,5 +31,13 @@ router.post(
 router.get("/", getSections);
 
 router.get("/admin", authenticate, getAdminSections);
+
+router.patch(
+  "/:id",
+  authenticate,
+  validateParams(sectionIdSchema),
+  validateBody(updateSectionSchema),
+  updateSection,
+);
 
 export default router;
