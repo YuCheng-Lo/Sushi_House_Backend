@@ -23,3 +23,13 @@ export const getSections = async (req: Request, res: Response) => {
     data: result,
   });
 };
+
+export const getAdminSections = async (req: Request, res: Response) => {
+  const result = await sectionService.getAdminSections();
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    message: "分類取得成功",
+    data: result,
+  });
+};

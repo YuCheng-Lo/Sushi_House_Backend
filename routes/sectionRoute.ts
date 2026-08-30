@@ -10,6 +10,7 @@ import { validateBody } from "../validations/validate.js";
 import { createSectionSchema } from "../validations/sectionValidation.js";
 import {
   createSection,
+  getAdminSections,
   getSections,
 } from "../controllers/sectionController.js";
 
@@ -23,5 +24,7 @@ router.post(
 );
 
 router.get("/", getSections);
+
+router.get("/admin", authenticate, getAdminSections);
 
 export default router;

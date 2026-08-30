@@ -35,3 +35,13 @@ export const getSections = async () => {
 
   return sections;
 };
+
+export const getAdminSections = async () => {
+  const sections = await prisma.section.findMany({
+    orderBy: {
+      sortOrder: "asc",
+    },
+  });
+
+  return sections;
+};
