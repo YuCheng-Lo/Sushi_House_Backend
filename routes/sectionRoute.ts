@@ -8,7 +8,10 @@ import { Router } from "express";
 import { authenticate } from "../middlewares/authenticate.js";
 import { validateBody } from "../validations/validate.js";
 import { createSectionSchema } from "../validations/sectionValidation.js";
-import { createSection } from "../controllers/sectionController.js";
+import {
+  createSection,
+  getSections,
+} from "../controllers/sectionController.js";
 
 const router = Router();
 
@@ -18,5 +21,7 @@ router.post(
   validateBody(createSectionSchema),
   createSection,
 );
+
+router.get("/", getSections);
 
 export default router;

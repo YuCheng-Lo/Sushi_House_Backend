@@ -22,3 +22,16 @@ export const createSection = async (data: CreateSectionInput) => {
 
   return section;
 };
+
+export const getSections = async () => {
+  const sections = await prisma.section.findMany({
+    where: {
+      status: "ACTIVE",
+    },
+    orderBy: {
+      sortOrder: "asc",
+    },
+  });
+
+  return sections;
+};

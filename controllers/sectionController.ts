@@ -13,3 +13,13 @@ export const createSection = async (req: Request, res: Response) => {
     data: result,
   });
 };
+
+export const getSections = async (req: Request, res: Response) => {
+  const result = await sectionService.getSections();
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    message: "分類取得成功",
+    data: result,
+  });
+};
