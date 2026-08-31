@@ -1,4 +1,5 @@
 import { httpStatus } from "../constants/constants.js";
+import type { SectionStatus } from "../generated/prisma/enums.js";
 import cloudinary from "../lib/cloudinary.js";
 import { prisma } from "../lib/prisma.js";
 import AppError from "../utils/AppError.js";
@@ -8,6 +9,10 @@ import type {
 } from "../validations/sectionValidation.js";
 
 export const createSection = async (data: CreateSectionInput) => {
+  if (data.status === "ACTIVE") {
+    throw new AppError("分類建立時不可直接設為顯示中", httpStatus.CONFLICT);
+  }
+
   const lastSection = await prisma.section.findFirst({
     orderBy: {
       sortOrder: "desc",
@@ -63,6 +68,42 @@ export const updateSection = async (id: number, data: UpdateSectionInput) => {
     throw new AppError("不存在的分類", httpStatus.NOT_FOUND);
   }
 
+  const checkStatus = async (
+    id: number,
+    oldState: SectionStatus,
+    newData: UpdateSectionInput,
+  ) => {
+    if (oldState === "ACTIVE" || newData?.status !== "ACTIVE") return;
+
+    const menuItems = await prisma.menuItem.findMany({
+      where: {
+        sectionId: id,
+      },
+      select: {
+        status: true,
+      },
+    });
+
+    if (menuItems.length === 0) {
+      throw new AppError(
+        "該分類下尚無任何菜單項目，只有含有菜單項目的分類才准許轉為'顯示中'狀態",
+        httpStatus.CONFLICT,
+      );
+    }
+
+    const menuItemActiveCount = menuItems.filter((menuItem) => {
+      return menuItem.status === "ACTIVE";
+    });
+
+    if (menuItemActiveCount.length === 0) {
+      throw new AppError(
+        "該分類下必須有1個以上狀態為'顯示中'的菜單項目才准許改為'顯示中'",
+        httpStatus.CONFLICT,
+      );
+    }
+  };
+  await checkStatus(id, section.status, data);
+
   const updatedSection = await prisma.section.update({
     where: {
       id,
@@ -82,6 +123,13 @@ export const deleteSection = async (id: number) => {
 
   if (!section) {
     throw new AppError("不存在的分類", httpStatus.NOT_FOUND);
+  }
+
+  if (section.status !== "HIDDEN") {
+    throw new AppError(
+      "分類刪除失敗，只有隱藏的分類才准許刪除",
+      httpStatus.CONFLICT,
+    );
   }
 
   const deletedMenuItems = await prisma.menuItem.findMany({

@@ -9,7 +9,7 @@ export const createMenuItem = async (req: Request, res: Response) => {
 
   return res.status(httpStatus.CREATED).json({
     success: true,
-    message: "菜餚新增成功",
+    message: "菜單項目新增成功",
     data: result,
   });
 };

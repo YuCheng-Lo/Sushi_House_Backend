@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import * as sectionService from "../services/sectionService.js";
 import { httpStatus } from "../constants/constants.js";
 import type { UpdateSectionInput } from "../validations/sectionValidation.js";
-import { success } from "zod";
 
 export const createSection = async (req: Request, res: Response) => {
   const createSectionInput = req.body;

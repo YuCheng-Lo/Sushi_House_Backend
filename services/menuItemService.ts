@@ -17,6 +17,10 @@ export const createMenuItem = async (data: CreateMenuItemInput) => {
     throw new AppError("不存在的分類", httpStatus.NOT_FOUND);
   }
 
+  if (data.status === "ACTIVE") {
+    throw new AppError("菜單項目建立時不可直接設為顯示中", httpStatus.CONFLICT);
+  }
+
   const lastMenuItem = await prisma.menuItem.findFirst({
     where: {
       sectionId: data.sectionId,
