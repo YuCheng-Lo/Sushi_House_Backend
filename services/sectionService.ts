@@ -132,3 +132,39 @@ export const deleteSection = async (id: number) => {
 
   return true;
 };
+
+export const getSectionDeletionImpact = async (id: number) => {
+  const section = await prisma.section.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  if (!section) {
+    throw new AppError("不存在的分類", httpStatus.NOT_FOUND);
+  }
+
+  const menuItems = await prisma.menuItem.findMany({
+    where: {
+      sectionId: id,
+    },
+    orderBy: {
+      sortOrder: "asc",
+    },
+    select: {
+      id: true,
+      name: true,
+      imageUrl: true,
+    },
+  });
+
+  return {
+    section,
+    menuItemCount: menuItems.length,
+    menuItems,
+  };
+};

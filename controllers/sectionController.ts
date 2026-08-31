@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import * as sectionService from "../services/sectionService.js";
 import { httpStatus } from "../constants/constants.js";
 import type { UpdateSectionInput } from "../validations/sectionValidation.js";
+import { success } from "zod";
 
 export const createSection = async (req: Request, res: Response) => {
   const createSectionInput = req.body;
@@ -61,5 +62,20 @@ export const deleteSection = async (
   return res.status(httpStatus.OK).json({
     success: true,
     message: "分類已永久刪除",
+  });
+};
+
+export const getSectionDeletionImpact = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response,
+) => {
+  const id = Number(req.params.id);
+
+  const result = await sectionService.getSectionDeletionImpact(id);
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    message: "分類刪除影響成功查詢",
+    data: result,
   });
 };

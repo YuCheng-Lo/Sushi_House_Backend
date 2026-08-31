@@ -1,9 +1,3 @@
-// POST   /sections
-// GET    /sections 前台展示，只露ACTIVE
-// GET    /sections/admin 後台展示
-// PATCH  /sections/:id
-// DELETE /sections/:id
-
 import { Router } from "express";
 import { authenticate } from "../middlewares/authenticate.js";
 import { validateBody, validateParams } from "../validations/validate.js";
@@ -16,6 +10,7 @@ import {
   createSection,
   deleteSection,
   getAdminSections,
+  getSectionDeletionImpact,
   getSections,
   updateSection,
 } from "../controllers/sectionController.js";
@@ -32,6 +27,13 @@ router.post(
 router.get("/", getSections);
 
 router.get("/admin", authenticate, getAdminSections);
+
+router.get(
+  "/:id/deletion-impact",
+  authenticate,
+  validateParams(sectionIdSchema),
+  getSectionDeletionImpact,
+);
 
 router.patch(
   "/:id",
