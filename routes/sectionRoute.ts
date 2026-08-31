@@ -14,6 +14,7 @@ import {
 } from "../validations/sectionValidation.js";
 import {
   createSection,
+  deleteSection,
   getAdminSections,
   getSections,
   updateSection,
@@ -38,6 +39,13 @@ router.patch(
   validateParams(sectionIdSchema),
   validateBody(updateSectionSchema),
   updateSection,
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  validateParams(sectionIdSchema),
+  deleteSection,
 );
 
 export default router;

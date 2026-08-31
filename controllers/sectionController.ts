@@ -49,3 +49,17 @@ export const updateSection = async (
     data: result,
   });
 };
+
+export const deleteSection = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response,
+) => {
+  const id = Number(req.params.id);
+
+  await sectionService.deleteSection(id);
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    message: "分類已永久刪除",
+  });
+};
