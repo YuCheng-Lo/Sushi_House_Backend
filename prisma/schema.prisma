@@ -49,7 +49,7 @@ model Section {
   id        Int           @id @default(autoincrement()) @db.UnsignedInt
   name      String        @db.VarChar(100)
   sortOrder Int           @default(0) @db.UnsignedInt
-  status    SectionStatus @default(ACTIVE)
+  status    SectionStatus @default(HIDDEN)
 
   menuItems MenuItem[]
 }
@@ -70,7 +70,7 @@ model MenuItem {
   imageUrl      String? @db.VarChar(500)
   imagePublicId String? @db.VarChar(255)
 
-  status    MenuItemStatus @default(ACTIVE)
+  status    MenuItemStatus @default(HIDDEN)
   sortOrder Int            @default(0) @db.UnsignedInt
 
   sectionId Int     @db.UnsignedInt
