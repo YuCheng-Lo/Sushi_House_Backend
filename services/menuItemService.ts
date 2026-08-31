@@ -44,3 +44,24 @@ export const createMenuItem = async (data: CreateMenuItemInput) => {
 
   return menuItem;
 };
+
+export const getMenuItems = async () => {
+  const menuItems = await prisma.menuItem.findMany({
+    where: {
+      status: "ACTIVE",
+      section: {
+        status: "ACTIVE",
+      },
+    },
+    orderBy: [{ section: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+  });
+
+  return menuItems;
+};
+export const getAdminMenuItems = async () => {
+  const menuItems = await prisma.menuItem.findMany({
+    orderBy: [{ section: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+  });
+
+  return menuItems;
+};

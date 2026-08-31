@@ -13,3 +13,23 @@ export const createMenuItem = async (req: Request, res: Response) => {
     data: result,
   });
 };
+
+export const getMenuItems = async (req: Request, res: Response) => {
+  const result = await menuItemService.getMenuItems();
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    message: "菜單項目取得成功",
+    data: result,
+  });
+};
+
+export const getAdminMenuItems = async (req: Request, res: Response) => {
+  const result = await menuItemService.getAdminMenuItems();
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    message: "菜單項目取得成功",
+    data: result,
+  });
+};
