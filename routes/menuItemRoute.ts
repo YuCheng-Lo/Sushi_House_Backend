@@ -1,9 +1,3 @@
-// POST   /menu-items
-// GET    /menu-items
-// GET    /menu-items/admin
-// PATCH  /menu-items/:id
-// DELETE /menu-items/:id
-
 import { Router } from "express";
 import { authenticate } from "../middlewares/authenticate.js";
 import { validateBody, validateParams } from "../validations/validate.js";
@@ -17,6 +11,7 @@ import {
   getMenuItems,
   getAdminMenuItems,
   updateMenuItem,
+  deleteMenuItem,
 } from "../controllers/menuItemController.js";
 
 const router = Router();
@@ -38,6 +33,13 @@ router.patch(
   validateParams(menuItemIdSchema),
   validateBody(updateMenuItemSchema),
   updateMenuItem,
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  validateParams(menuItemIdSchema),
+  deleteMenuItem,
 );
 
 export default router;

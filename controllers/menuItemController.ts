@@ -49,3 +49,17 @@ export const updateMenuItem = async (
     data: result,
   });
 };
+
+export const deleteMenuItem = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response,
+) => {
+  const id = Number(req.params.id);
+
+  await menuItemService.deleteMenuItem(id);
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    message: "菜單項目成功移除",
+  });
+};
