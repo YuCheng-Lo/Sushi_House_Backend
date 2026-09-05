@@ -44,3 +44,45 @@ model Session {
   @@index([user_id])
   @@index([expires_at])
 }
+
+model Section {
+  id        Int           @id @default(autoincrement()) @db.UnsignedInt
+  name      String        @db.VarChar(100)
+  sortOrder Int           @default(0) @db.UnsignedInt
+  status    SectionStatus @default(HIDDEN)
+
+  menuItems MenuItem[]
+}
+
+enum SectionStatus {
+  ACTIVE
+  HIDDEN
+}
+
+model MenuItem {
+  id    Int     @id @default(autoincrement()) @db.UnsignedInt
+  name  String  @db.VarChar(100)
+  price Int     @db.UnsignedInt
+  unit  String? @db.VarChar(50)
+
+  option        String? @db.VarChar(100)
+  description   String? @db.Text
+  imageUrl      String? @db.VarChar(500)
+  imagePublicId String? @db.VarChar(255)
+
+  status    MenuItemStatus @default(HIDDEN)
+  sortOrder Int            @default(0) @db.UnsignedInt
+
+  sectionId Int     @db.UnsignedInt
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sectionId, sortOrder])
+}
+
+enum MenuItemStatus {
+  ACTIVE
+  HIDDEN
+}

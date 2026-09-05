@@ -30,6 +30,18 @@ if (!process.env.ACCESS_TOKEN_EXPIRES_IN) {
   throw new Error("ACCESS_TOKEN_EXPIRES_IN 未設定");
 }
 
+if (!process.env.CLOUDINARY_CLOUD_NAME) {
+  throw new Error("CLOUDINARY_CLOUD_NAME 未設定");
+}
+
+if (!process.env.CLOUDINARY_API_KEY) {
+  throw new Error("CLOUDINARY_API_KEY 未設定");
+}
+
+if (!process.env.CLOUDINARY_API_SECRET) {
+  throw new Error("CLOUDINARY_API_SECRET 未設定");
+}
+
 export const env = {
   nodeEnv,
 
@@ -46,4 +58,8 @@ export const env = {
   refreshTokenExpiresIn,
 
   refreshTokenLifetimeMs: ms(refreshTokenExpiresIn),
+
+  cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
+  apiKey: process.env.CLOUDINARY_API_KEY!,
+  apiSecret: process.env.CLOUDINARY_API_SECRET!,
 };

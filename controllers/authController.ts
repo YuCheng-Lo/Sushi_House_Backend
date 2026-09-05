@@ -11,7 +11,7 @@ export const register = async (req: Request, res: Response) => {
   const user = await authService.register({ name, nickname, email, password });
 
   return res.status(httpStatus.CREATED).json({
-    success: "ok",
+    success: true,
     message: "註冊成功",
     data: user,
   });
@@ -42,7 +42,7 @@ export const login = async (
   });
 
   return res.status(httpStatus.OK).json({
-    success: "ok",
+    success: true,
     message: "登入成功",
     data: {
       user: result.user,
@@ -63,7 +63,7 @@ export const getMe = async (req: Request, res: Response) => {
   if (!user) throw new AppError("找不到使用者", httpStatus.NOT_FOUND);
 
   return res.status(httpStatus.OK).json({
-    success: "ok",
+    success: true,
     message: "成功通過 Access Token 驗證",
     data: user,
   });
@@ -89,7 +89,7 @@ export const refresh = async (req: Request, res: Response) => {
   });
 
   return res.status(httpStatus.OK).json({
-    success: "ok",
+    success: true,
     message: "refresh刷新成功",
     data: {
       accessToken: newAccessToken,
@@ -113,7 +113,7 @@ export const logout = async (req: Request, res: Response) => {
   }
 
   return res.status(httpStatus.OK).json({
-    success: "ok",
+    success: true,
     message: "登出成功",
   });
 };

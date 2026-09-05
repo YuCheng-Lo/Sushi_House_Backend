@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `menuitem` MODIFY `status` ENUM('ACTIVE', 'HIDDEN') NOT NULL DEFAULT 'HIDDEN';
+
+-- AlterTable
+ALTER TABLE `section` MODIFY `status` ENUM('ACTIVE', 'HIDDEN') NOT NULL DEFAULT 'HIDDEN';

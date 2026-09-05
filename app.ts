@@ -1,16 +1,28 @@
 import express from "express";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import authRoute from "./routes/authRoute.js";
+import sectionRoute from "./routes/sectionRoute.js";
+import imageRoute from "./routes/imageRoute.js";
+import menuItemRoute from "./routes/menuItemRoute.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import "./jobs/cleanupSession.js";
 
 const app = express();
 const PORT: number = 3000;
 
+app.use(
+  cors({
+    origin: "http://127.0.0.1:5500",
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use("/auth", authRoute);
+app.use("/sections", sectionRoute);
+app.use("/image", imageRoute);
+app.use("/menu-items", menuItemRoute);
 
 app.get("/", (req, res) => {
   return res.send("Let Sushi House Great Agint Again");

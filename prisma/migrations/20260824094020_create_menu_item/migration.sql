@@ -1,0 +1,18 @@
+-- CreateTable
+CREATE TABLE `MenuItem` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(100) NOT NULL,
+    `price` INTEGER UNSIGNED NOT NULL,
+    `unit` VARCHAR(50) NULL,
+    `section` VARCHAR(100) NOT NULL,
+    `option` VARCHAR(100) NULL,
+    `description` TEXT NULL,
+    `imageUrl` VARCHAR(500) NULL,
+    `imagePublicId` VARCHAR(255) NULL,
+    `status` ENUM('ACTIVE', 'HIDDEN', 'SOLD_OUT') NOT NULL DEFAULT 'ACTIVE',
+    `sortOrder` INTEGER UNSIGNED NOT NULL DEFAULT 0,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
