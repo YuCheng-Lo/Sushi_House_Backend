@@ -50,6 +50,101 @@ export const register = async (data: RegisterInput) => {
   return user;
 };
 
+const handleFailedLogin = async (userId: number) => {
+  await prisma.$transaction(async (tx) => {
+    // 1. 用 FOR UPDATE 取得並鎖住 User
+    const users = await tx.$queryRaw<
+      {
+        id: number;
+        failed_login_attempts: number;
+        locked_until: Date | null;
+      }[]
+    >`
+        SELECT
+          id,
+          failed_login_attempts,
+          locked_until
+        FROM User
+        WHERE id = ${userId}
+        FOR UPDATE
+        `;
+
+    // 2. 取得最新資料
+    const user = users[0];
+
+    if (!user) {
+      throw new AppError("找不到使用者", httpStatus.NOT_FOUND);
+    }
+
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // 3. newAttempts = oldAttempts + 1
+    const newAttempts = user.failed_login_attempts + 1;
+
+    // 4. 根據 newAttempts 決定 lock duration
+    let lockDuration = 0;
+    if (newAttempts === 5) {
+      lockDuration = 5 * 60 * 1000;
+    } else if (newAttempts === 6) {
+      lockDuration = 10 * 60 * 1000;
+    } else if (newAttempts === 7) {
+      lockDuration = 20 * 60 * 1000;
+    } else if (newAttempts >= 8) {
+      lockDuration = 30 * 60 * 1000;
+    }
+
+    const lockedUntil =
+      lockDuration > 0 ? new Date(Date.now() + lockDuration) : null;
+
+    // 5. UPDATE failed_login_attempts + locked_until
+    await tx.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        failed_login_attempts: newAttempts,
+        locked_until: lockedUntil,
+      },
+    });
+  });
+};
+
+const handleSuccessfulLogin = async (userId: number) => {
+  await prisma.$transaction(async (tx) => {
+    const users = await tx.$queryRaw<
+      {
+        id: number;
+        failed_login_attempts: number;
+        locked_until: Date | null;
+      }[]
+    >`
+    SELECT 
+    id,
+    failed_login_attempts,
+    locked_until
+    FROM User
+    WHERE id = ${userId}
+    FOR UPDATE
+    `;
+
+    const user = users[0];
+
+    if (!user) {
+      throw new AppError("找不到使用者", httpStatus.NOT_FOUND);
+    }
+
+    await tx.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        failed_login_attempts: 0,
+        locked_until: null,
+      },
+    });
+  });
+};
+
 export const login = async (data: LoginInput) => {
   const { email, password, userAgent, ipAddress } = data;
 
@@ -62,10 +157,21 @@ export const login = async (data: LoginInput) => {
 
   if (!user) throw new AppError("帳號或密碼錯誤", httpStatus.UNAUTHORIZED);
 
+  if (user.locked_until && user.locked_until > new Date()) {
+    throw new AppError(
+      "帳號暫時鎖定，請稍後再試",
+      httpStatus.TOO_MANY_REQUESTS,
+    );
+  }
+
   // 2. 比對密碼是否正確
   const isValidPassword = await bcrypt.compare(password, user.password);
-  if (!isValidPassword)
+  if (!isValidPassword) {
+    await handleFailedLogin(user.id);
     throw new AppError("帳號或密碼錯誤", httpStatus.UNAUTHORIZED);
+  }
+
+  await handleSuccessfulLogin(user.id);
 
   // 3. 預先手動生成 sessionId (打破循環!)
   const sessionId = crypto.randomUUID();
