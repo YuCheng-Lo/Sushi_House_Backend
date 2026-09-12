@@ -8,9 +8,12 @@ import imageRoute from "./routes/imageRoute.js";
 import menuItemRoute from "./routes/menuItemRoute.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import "./jobs/cleanupSession.js";
+import helmet from "helmet";
 
 const app = express();
 const PORT: number = 3000;
+
+app.use(helmet());
 
 app.use(
   cors({
@@ -23,10 +26,6 @@ app.use("/auth", authRoute);
 app.use("/sections", sectionRoute);
 app.use("/image", imageRoute);
 app.use("/menu-items", menuItemRoute);
-
-app.get("/", (req, res) => {
-  return res.send("Let Sushi House Great Agint Again");
-});
 
 app.use(errorHandler);
 
