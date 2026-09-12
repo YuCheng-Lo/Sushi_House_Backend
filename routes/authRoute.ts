@@ -9,11 +9,19 @@ import {
 import { validateBody } from "../validations/validate.js";
 import { loginSchema, registerSchema } from "../validations/authValidation.js";
 import { authenticate } from "../middlewares/authenticate.js";
-import { loginIpRateLimiter } from "../middlewares/rateLimit.js";
+import {
+  loginIpRateLimiter,
+  registerRateLimiter,
+} from "../middlewares/rateLimit.js";
 
 const router = Router();
 
-router.post("/register", validateBody(registerSchema), register);
+router.post(
+  "/register",
+  registerRateLimiter,
+  validateBody(registerSchema),
+  register,
+);
 
 router.post("/login", loginIpRateLimiter, validateBody(loginSchema), login);
 
