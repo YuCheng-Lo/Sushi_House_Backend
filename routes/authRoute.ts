@@ -11,6 +11,7 @@ import { loginSchema, registerSchema } from "../validations/authValidation.js";
 import { authenticate } from "../middlewares/authenticate.js";
 import {
   loginIpRateLimiter,
+  refreshRateLimiter,
   registerRateLimiter,
 } from "../middlewares/rateLimit.js";
 
@@ -27,7 +28,7 @@ router.post("/login", loginIpRateLimiter, validateBody(loginSchema), login);
 
 router.get("/me", authenticate, getMe);
 
-router.post("/refresh", refresh);
+router.post("/refresh", refreshRateLimiter, refresh);
 
 router.post("/logout", logout);
 
