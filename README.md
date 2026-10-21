@@ -1,3 +1,17 @@
+# Sushi House Backend
+
+## Project Overview
+
+Sushi House Backend is a RESTful API project originally developed for a Japanese restaurant's digital menu management system.
+
+The project began as a client request for a menu image management solution. Through multiple rounds of discussions and requirement refinement, the initial concept evolved into a backend system supporting menu categories, menu items, image uploads, and administrative authentication.
+
+During development, deployment options, hosting costs, and long-term maintenance requirements were evaluated and communicated to the client. After considering operational needs and ongoing costs, the client decided to adopt a simpler, hosting-free solution using Google Drive and Canva.
+
+As a result, development of the original commercial application was discontinued. With the client's permission, the existing backend implementation was retained as a personal portfolio project to demonstrate RESTful API development, authentication and session management, relational database design, and backend business logic.
+
+**Project Status:** Portfolio project — backend implementation available; original client deployment discontinued.
+
 ## Tech Stack
 
 | Category       | Technology                       | Purpose                                                             |
