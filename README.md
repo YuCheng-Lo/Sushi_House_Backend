@@ -394,3 +394,143 @@ Indexes are defined to support common data access patterns:
 | MenuItem | `sectionId`, `sortOrder` | Support retrieving and ordering menu items within a section |
 
 Database schema changes are managed using Prisma Migrate.
+
+## Environment Variables
+
+The application uses environment variables to configure database connections, authentication, security settings, and Cloudinary integration.
+
+Create a `.env` file in the project root using the provided `.env.example` template.
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Update the values according to your local environment.
+
+### Environment Configuration
+
+| Variable                   | Description                                            |
+| -------------------------- | ------------------------------------------------------ |
+| `DATABASE_URL`             | MySQL connection URL used by Prisma CLI and migrations |
+| `DB_HOST`                  | Database hostname used by the MariaDB Adapter          |
+| `DB_USER`                  | Database username                                      |
+| `DB_PASSWORD`              | Database password                                      |
+| `DB_NAME`                  | Database name                                          |
+| `NODE_ENV`                 | Runtime environment (`development` or `production`)    |
+| `SALT_ROUNDS`              | bcrypt password hashing cost factor                    |
+| `ACCESS_TOKEN_SECRET`      | Secret key used to sign Access Tokens                  |
+| `REFRESH_TOKEN_SECRET`     | Secret key used to sign Refresh Tokens                 |
+| `ACCESS_TOKEN_EXPIRES_IN`  | Access Token lifetime (e.g., `15m`)                    |
+| `REFRESH_TOKEN_EXPIRES_IN` | Refresh Token lifetime (e.g., `7d`)                    |
+| `CLOUDINARY_CLOUD_NAME`    | Cloudinary cloud identifier                            |
+| `CLOUDINARY_API_KEY`       | Cloudinary API key                                     |
+| `CLOUDINARY_API_SECRET`    | Cloudinary API secret                                  |
+
+### Database Connection Configuration
+
+The project uses two database configuration approaches:
+
+- **Prisma CLI:** Uses `DATABASE_URL` from `prisma.config.ts` for database migrations.
+- **Application Runtime:** Uses `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` through the Prisma MariaDB Adapter in `lib/prisma.ts`.
+
+Both configurations must reference the same MySQL database.
+
+### Security Notes
+
+- Never commit `.env` or actual credentials to version control.
+- Use strong, independently generated secrets for Access Tokens and Refresh Tokens.
+- Keep production database credentials separate from development credentials.
+- The `.env.example` file contains placeholders only and is safe to commit when no real secrets are included.
+
+---
+
+## Getting Started
+
+Follow the steps below to set up and run the backend locally.
+
+### Prerequisites
+
+Make sure the following are installed or available:
+
+- Node.js and npm
+- MySQL Server
+- A Cloudinary account with valid API credentials
+
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd Sushi_House_Backend
+```
+
+Replace `<repository-url>` with the actual GitHub repository URL.
+
+### 2. Install Dependencies
+
+```bash
+npm ci
+```
+
+This installs dependencies according to the project's `package-lock.json`.
+
+### 3. Configure Environment Variables
+
+Copy the provided template:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Configure the database credentials, JWT secrets, bcrypt settings, token expiration values, and Cloudinary credentials.
+
+Ensure that the database specified by `DATABASE_URL` matches the connection configured through the individual `DB_*` variables.
+
+### 4. Set Up the Database
+
+Create the MySQL database if it does not already exist.
+
+Then apply the existing Prisma migrations:
+
+```bash
+npx prisma migrate deploy
+```
+
+Generate the Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+### 5. Start the Development Server
+
+```bash
+npm run dev
+```
+
+The server runs at:
+
+```text
+http://localhost:3000
+```
+
+The development command uses `tsx watch` to automatically restart the server when source files change.
+
+### 6. Test the API
+
+Use an API client such as Postman to test the endpoints.
+
+For example:
+
+```http
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+```
+
+Refer to the **API Documentation** section for the available endpoints and authentication requirements.
+
+### Development Notes
+
+- The backend currently uses port `3000` configured in `app.ts`.
+- CORS is configured to allow requests from `http://localhost:5173`.
+- The project currently provides a development script (`npm run dev`).
+- Automated tests and a production build/start workflow are not yet configured.
