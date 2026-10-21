@@ -64,3 +64,39 @@ Each layer has a specific responsibility:
 - **Controllers:** Process HTTP requests and return responses.
 - **Services:** Implement business rules and interact with the database or external services.
 - **Prisma ORM:** Manage database queries and data persistence.
+
+## Core Features
+
+### Authentication & Session Management
+
+- User registration and login with bcrypt password hashing.
+- JWT-based authentication using Access Tokens and Refresh Tokens.
+- Refresh Token rotation with database-backed session management.
+- Support for multiple independent user sessions.
+- Account lockout mechanism with progressive lockout durations after failed login attempts.
+- Session revocation on logout.
+
+### Menu & Section Management
+
+- CRUD operations for menu items and menu sections.
+- Separate public and authenticated management endpoints.
+- Visibility control using `ACTIVE` and `HIDDEN` statuses.
+- Automatic sort order assignment for newly created sections and menu items.
+- Business rule validation to prevent invalid visibility changes.
+- Deletion restrictions and impact preview for menu sections.
+
+### Image Upload & Storage
+
+- Image uploads using Multer and Cloudinary.
+- Cloud-based image storage with image URLs and public IDs.
+- Authentication required for image uploads.
+- Cloudinary image cleanup during menu item and section deletion.
+
+### Security & Maintenance
+
+- Request validation using Zod.
+- HTTP security headers configured with Helmet.
+- Cross-origin resource sharing configured with CORS.
+- Rate limiting for authentication-related endpoints.
+- Centralized error handling.
+- Scheduled cleanup of expired sessions using node-cron.
