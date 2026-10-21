@@ -275,3 +275,122 @@ Invalid requests are handled through the application's centralized error-handlin
 | 500 Internal Server Error | Unexpected server error                         |
 
 _The exact response status depends on the endpoint and the corresponding service logic._
+
+## Database Schema
+
+The application uses MySQL as its relational database, with Prisma ORM for schema management, migrations, and database operations.
+
+The database consists of four main models: `User`, `Session`, `Section`, and `MenuItem`.
+
+### Data Relationships
+
+```text
+User (1) ─────────── (N) Session
+  │                       │
+  └─ One user can have multiple sessions
+
+Section (1) ──────── (N) MenuItem
+  │                       │
+  └─ One section can contain multiple menu items
+```
+
+### User
+
+Stores user account information and login security state.
+
+| Field                 | Type      | Description                    |
+| --------------------- | --------- | ------------------------------ |
+| id                    | Int       | Primary key, auto-increment    |
+| name                  | String    | User's name                    |
+| nickname              | String?   | Optional nickname              |
+| email                 | String    | Unique email address           |
+| password              | String    | bcrypt-hashed password         |
+| failed_login_attempts | Int       | Consecutive failed login count |
+| locked_until          | DateTime? | Account lockout expiration     |
+| created_at            | DateTime  | Account creation timestamp     |
+
+**Constraints:** Unique constraint on `email`.
+
+### Session
+
+Manages authenticated sessions and Refresh Token lifecycle.
+
+| Field              | Type      | Description                       |
+| ------------------ | --------- | --------------------------------- |
+| id                 | String    | Primary key, generated using CUID |
+| user_id            | Int       | Foreign key referencing User      |
+| refresh_token_hash | String    | Hashed Refresh Token              |
+| user_agent         | String?   | Client User Agent                 |
+| ip_address         | String?   | Client IP address                 |
+| expires_at         | DateTime  | Session expiration timestamp      |
+| revoked_at         | DateTime? | Session revocation timestamp      |
+| version            | Int       | Optimistic concurrency control    |
+| created_at         | DateTime  | Session creation timestamp        |
+| updated_at         | DateTime  | Last update timestamp             |
+
+**Indexes:** `user_id`, `expires_at`.
+
+**Relationship:** Multiple sessions can belong to one user.
+
+### Section
+
+Represents a menu category used to organize menu items.
+
+| Field     | Type          | Description                           |
+| --------- | ------------- | ------------------------------------- |
+| id        | Int           | Primary key, auto-increment           |
+| name      | String        | Section name                          |
+| sortOrder | Int           | Display ordering                      |
+| status    | SectionStatus | Visibility status, defaults to HIDDEN |
+
+**Status Values:** `ACTIVE`, `HIDDEN`.
+
+**Relationship:** One section can contain multiple menu items.
+
+### MenuItem
+
+Stores individual menu items, pricing information, and image references.
+
+| Field         | Type           | Description                           |
+| ------------- | -------------- | ------------------------------------- |
+| id            | Int            | Primary key, auto-increment           |
+| sectionId     | Int            | Foreign key referencing Section       |
+| name          | String         | Menu item name                        |
+| price         | Int            | Non-negative integer price            |
+| unit          | String?        | Optional unit                         |
+| option        | String?        | Optional item option                  |
+| description   | String?        | Optional description                  |
+| imageUrl      | String?        | Cloudinary image URL                  |
+| imagePublicId | String?        | Cloudinary public ID                  |
+| status        | MenuItemStatus | Visibility status, defaults to HIDDEN |
+| sortOrder     | Int            | Display ordering                      |
+| createdAt     | DateTime       | Creation timestamp                    |
+| updatedAt     | DateTime       | Last update timestamp                 |
+
+**Index:** Composite index on `(sectionId, sortOrder)`.
+
+**Status Values:** `ACTIVE`, `HIDDEN`.
+
+### Referential Integrity
+
+The database defines foreign key relationships with cascading deletion:
+
+- **User → Session:** Deleting a user automatically deletes their associated session records.
+- **Section → MenuItem:** Deleting a section automatically deletes its associated menu item records.
+
+These relationships are enforced at the database level through foreign key constraints.
+
+Application-level business rules provide additional validation before certain operations, such as restricting invalid visibility changes and previewing the impact of section deletion.
+
+### Database Indexes
+
+Indexes are defined to support common data access patterns:
+
+| Model    | Indexed Field(s)         | Purpose                                                     |
+| -------- | ------------------------ | ----------------------------------------------------------- |
+| User     | `email` (Unique)         | Enforce email uniqueness and support account lookup         |
+| Session  | `user_id`                | Support user-session queries                                |
+| Session  | `expires_at`             | Support expired-session cleanup                             |
+| MenuItem | `sectionId`, `sortOrder` | Support retrieving and ordering menu items within a section |
+
+Database schema changes are managed using Prisma Migrate.
