@@ -191,3 +191,87 @@ The system implements progressive account lockouts after consecutive failed pass
 - Logging out revokes the associated database session and clears the Refresh Token cookie.
 - Revoked sessions cannot be used to refresh authentication tokens.
 - A scheduled job removes expired sessions from the database.
+
+## API Documentation
+
+The backend provides RESTful APIs for authentication, menu section management, menu item management, and image uploads.
+
+**Base URL (Local Development)**
+
+```text
+http://localhost:3000
+```
+
+### Authentication
+
+| Method | Endpoint         | Description                                     | Authentication       |
+| ------ | ---------------- | ----------------------------------------------- | -------------------- |
+| POST   | `/auth/register` | Register a new user                             | No                   |
+| POST   | `/auth/login`    | Authenticate user and create a session          | No                   |
+| GET    | `/auth/me`       | Get the authenticated user's information        | Bearer Token         |
+| POST   | `/auth/refresh`  | Refresh authentication tokens                   | Refresh Token Cookie |
+| POST   | `/auth/logout`   | Revoke the current session and clear the cookie | Refresh Token Cookie |
+
+### Menu Sections
+
+| Method | Endpoint                        | Description                                           | Authentication |
+| ------ | ------------------------------- | ----------------------------------------------------- | -------------- |
+| GET    | `/sections`                     | Retrieve publicly visible sections                    | No             |
+| GET    | `/sections/admin`               | Retrieve sections for management                      | Bearer Token   |
+| POST   | `/sections`                     | Create a new section                                  | Bearer Token   |
+| PATCH  | `/sections/:id`                 | Update a section                                      | Bearer Token   |
+| GET    | `/sections/:id/deletion-impact` | Preview affected menu items before deleting a section | Bearer Token   |
+| DELETE | `/sections/:id`                 | Delete a section                                      | Bearer Token   |
+
+### Menu Items
+
+| Method | Endpoint            | Description                          | Authentication |
+| ------ | ------------------- | ------------------------------------ | -------------- |
+| GET    | `/menu-items`       | Retrieve publicly visible menu items | No             |
+| GET    | `/menu-items/admin` | Retrieve menu items for management   | Bearer Token   |
+| POST   | `/menu-items`       | Create a new menu item               | Bearer Token   |
+| PATCH  | `/menu-items/:id`   | Update a menu item                   | Bearer Token   |
+| DELETE | `/menu-items/:id`   | Delete a menu item                   | Bearer Token   |
+
+### Image Upload
+
+| Method | Endpoint        | Description                   | Authentication |
+| ------ | --------------- | ----------------------------- | -------------- |
+| POST   | `/image/upload` | Upload an image to Cloudinary | Bearer Token   |
+
+**Upload Requirements**
+
+- Content-Type: `multipart/form-data`
+- File field name: `image`
+- A valid Access Token must be provided in the Authorization header.
+
+### Authentication Headers
+
+Protected endpoints require an Access Token in the following format:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+The Refresh Token is transmitted through an HttpOnly Cookie named `refreshToken`, rather than an Authorization header.
+
+### Request Validation
+
+The API uses Zod schemas to validate supported request bodies and route parameters.
+
+Invalid requests are handled through the application's centralized error-handling middleware.
+
+### API Response Status Codes
+
+| Status Code               | Description                                     |
+| ------------------------- | ----------------------------------------------- |
+| 200 OK                    | Successful request                              |
+| 201 Created               | Resource successfully created                   |
+| 400 Bad Request           | Invalid request data or business rule violation |
+| 401 Unauthorized          | Missing, expired, or invalid authentication     |
+| 404 Not Found             | Requested resource does not exist               |
+| 409 Conflict              | Conflicting resource or operation               |
+| 429 Too Many Requests     | Rate limit exceeded                             |
+| 500 Internal Server Error | Unexpected server error                         |
+
+_The exact response status depends on the endpoint and the corresponding service logic._
