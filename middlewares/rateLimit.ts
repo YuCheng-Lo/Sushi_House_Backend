@@ -1,4 +1,5 @@
 import { rateLimit } from "express-rate-limit";
+import { env } from "../config/env.js";
 
 // express-rate-limit基本概念
 // 1. windowMs，也就是所謂的windowMs: 5 * 60 * 1000，5分鐘時間限制。
@@ -34,7 +35,7 @@ export const registerRateLimiter = rateLimit({
 
 export const refreshRateLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
-  limit: 5,
+  limit: env.isProduction ? 5 : 100,
 
   standardHeaders: "draft-8",
   legacyHeaders: false,
