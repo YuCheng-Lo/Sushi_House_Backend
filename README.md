@@ -534,3 +534,39 @@ Refer to the **API Documentation** section for the available endpoints and authe
 - CORS is configured to allow requests from `http://localhost:5173`.
 - The project currently provides a development script (`npm run dev`).
 - Automated tests and a production build/start workflow are not yet configured.
+
+## Security Considerations
+
+The backend implements multiple security measures to protect authentication flows, validate incoming requests, and reduce common API security risks.
+
+### Implemented Security Measures
+
+- **Password Hashing:** User passwords are hashed using bcrypt before being stored in the database.
+- **JWT Authentication:** Protected endpoints require valid Access Tokens.
+- **Refresh Token Protection:** Refresh Tokens are delivered through HttpOnly Cookies and stored as bcrypt hashes in the database.
+- **Session Revocation:** Database-backed sessions support explicit revocation and expiration checks during token refresh.
+- **Login Protection:** Progressive account lockouts and rate limiting help mitigate repeated authentication attempts.
+- **Input Validation:** Zod schemas validate supported request payloads and parameters.
+- **HTTP Security Headers:** Helmet configures security-related HTTP response headers.
+- **CORS Configuration:** Cross-origin requests are restricted to the configured development origin.
+- **Centralized Error Handling:** Application errors are processed through a dedicated error-handling middleware.
+
+### Current Limitations
+
+The following areas require additional work before considering the application production-ready:
+
+- **File Upload Validation:** Add file size limits and explicit file type validation for uploaded images.
+- **Authorization:** Introduce role-based or permission-based access control if multiple user privilege levels are required.
+- **Token Rotation:** Strengthen Refresh Token uniqueness and replay detection.
+- **Environment Configuration:** Move development-specific CORS settings into environment-based configuration.
+- **Security Testing:** Add automated tests for authentication, authorization, rate limiting, and file upload validation.
+
+These limitations are documented to clarify the current security boundaries and guide future improvements.
+
+## Future Improvements (Roadmap)
+
+The following improvements are planned to enhance the project's maintainability, reliability, and deployment readiness.
+
+- **Containerization:** Introduce Docker and Docker Compose to provide reproducible development and deployment environments.
+- **Observability & Logging:** Implement structured application logging and HTTP request logging, with improved error diagnostics.
+- **Automated Testing:** Add unit and integration tests using a testing framework such as Vitest or Jest, along with Supertest for API testing.
