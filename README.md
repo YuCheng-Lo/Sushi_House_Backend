@@ -100,3 +100,94 @@ Each layer has a specific responsibility:
 - Rate limiting for authentication-related endpoints.
 - Centralized error handling.
 - Scheduled cleanup of expired sessions using node-cron.
+
+## Authentication & Session Management
+
+The authentication system uses JWT-based authentication with database-backed sessions to support multiple logins, token renewal, and session revocation.
+
+### Token Strategy
+
+The system uses two types of JSON Web Tokens:
+
+| Token         | Storage / Delivery           | Purpose                                            |
+| ------------- | ---------------------------- | -------------------------------------------------- |
+| Access Token  | Returned in the API response | Authenticate requests to protected endpoints       |
+| Refresh Token | HttpOnly Cookie              | Obtain a new Access Token without logging in again |
+
+- Access Tokens are short-lived and validated by authentication middleware.
+- Refresh Tokens are associated with individual database sessions.
+- Refresh Tokens are stored as bcrypt hashes in the database.
+- Refresh Token cookies use `HttpOnly`, `SameSite=Lax`, and environment-dependent `Secure` settings.
+
+### Authentication Flow
+
+```text
+User Login
+    |
+    v
+Validate Credentials
+    |
+    v
+Verify Password (bcrypt)
+    |
+    v
+Create Database Session
+    |
+    v
+Generate Access & Refresh Tokens
+    |
+    +--> Return Access Token in API Response
+    |
+    +--> Set Refresh Token in HttpOnly Cookie
+```
+
+### Session Management
+
+Each successful login creates an independent session in MySQL.
+
+Session records include:
+
+- Session ID and associated User ID
+- Hashed Refresh Token
+- Token expiration timestamp
+- Revocation timestamp
+- User Agent and IP address
+- Version number for concurrent update control
+
+This design supports multiple active sessions for the same user and allows individual sessions to be revoked.
+
+### Token Refresh & Rotation
+
+When a client requests a new Access Token:
+
+1. Verify the Refresh Token's signature and expiration.
+2. Retrieve the associated session from the database.
+3. Check the session's user ownership, expiration, and revocation status.
+4. Compare the provided Refresh Token against the stored bcrypt hash.
+5. Generate new tokens and update the session's Refresh Token hash.
+6. Use optimistic concurrency control with a session version number to detect conflicting updates.
+
+The session's original expiration time is preserved during refresh operations.
+
+### Login Protection
+
+The system implements progressive account lockouts after consecutive failed password attempts.
+
+| Failed Attempts | Lockout Duration   |
+| --------------- | ------------------ |
+| 1–4             | No account lockout |
+| 5               | 5 minutes          |
+| 6               | 10 minutes         |
+| 7               | 20 minutes         |
+| 8 or more       | 30 minutes         |
+
+- Failed login counters are updated inside database transactions.
+- MySQL `SELECT ... FOR UPDATE` is used to serialize updates to the user's failed-login state.
+- A successful login resets the failure counter and lockout status.
+- IP-based rate limiting provides an additional layer of protection.
+
+### Logout & Session Cleanup
+
+- Logging out revokes the associated database session and clears the Refresh Token cookie.
+- Revoked sessions cannot be used to refresh authentication tokens.
+- A scheduled job removes expired sessions from the database.
